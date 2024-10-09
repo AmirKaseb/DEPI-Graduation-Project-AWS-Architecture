@@ -115,43 +115,6 @@ resource "aws_subnet" "public-subnet-3" {
     Task = "Amir Kasseb "
   }
 }
-# Create RDS Subnets 
-
-# RDS Subnet 1 
-resource "aws_subnet" "private-subnet-4" {
-  availability_zone = "us-east-1a"
-  vpc_id     = aws_vpc.Depi_vpc.id
-  cidr_block = "10.0.6.0/24"
-  tags = {
-    Name = "private-subnet-4"
-    Graduation_Project = "True"  
-    Task = "Amir Kasseb "
-  }
-}
-
-# RDS Subnet 2
-resource "aws_subnet" "private-subnet-5" {
-  availability_zone = "us-east-1b"
-  vpc_id     = aws_vpc.Depi_vpc.id
-  cidr_block = "10.0.7.0/24"
-  tags = {
-    Name = "private-subnet-5"
-    Graduation_Project = "True"  
-    Task = "Amir Kasseb "
-  }
-}
-
-# RDS Subnet 3
-resource "aws_subnet" "private-subnet-6" {
-  availability_zone = "us-east-1c"
-  vpc_id     = aws_vpc.Depi_vpc.id
-  cidr_block = "10.0.8.0/24"
-  tags = {
-    Name = "private-subnet-6"
-    Graduation_Project = "True"  
-    Task = "Amir Kasseb "
-  }
-}
 
 # Create Internet Gateway 
 
@@ -285,15 +248,15 @@ resource "aws_security_group" "bastion_host_secuirty_group" {
 
 # Bastion host ec2 instance configuration
 
-resource "aws_instance" "depi-bastion-host" {
+resource "aws_instance" "depi-frontend-server" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
   key_name      =  aws_key_pair.amir-public-key.id
   subnet_id = aws_subnet.public-subnet-1.id
-  security_groups = [aws_security_group.private_app_secuirty_group.id]
+  vpc_security_group_ids  = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
-    Name = "depi-bastion-host"
+    Name = "depi-frontend-server"
   }
 }
 # Create the private app security group & private app ec2 instance
@@ -329,8 +292,8 @@ resource "aws_instance" "jenkins_server_instance" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
   key_name      =  aws_key_pair.amir-public-key.id
-  subnet_id = aws_subnet.private-subnet-1.id
-  security_groups = [aws_security_group.private_app_secuirty_group.id]
+  subnet_id = aws_subnet.public-subnet-3.id
+  vpc_security_group_ids  = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
     Name = "jenkins_server_instance"
@@ -338,15 +301,15 @@ resource "aws_instance" "jenkins_server_instance" {
 }
 # prometheus server  instance configuration
 
-resource "aws_instance" "prometheus_server_instance" {
+resource "aws_instance" "depi_backend_server" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
   key_name      =  aws_key_pair.amir-public-key.id
-  subnet_id = aws_subnet.private-subnet-4.id
-  security_groups = [aws_security_group.private_app_secuirty_group.id]
+  subnet_id = aws_subnet.private-subnet-1.id
+  vpc_security_group_ids  = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
-    Name = "prometheus_server_instance"
+    Name = "depi_backend_server"
   }
 }
 # Security Group for RDS
@@ -397,7 +360,7 @@ data "aws_secretsmanager_secret_version" "rds_secret_version" {
 # Create DB Subnet Group
 resource "aws_db_subnet_group" "rds-subnet-group" {
   name       = "rds-subnet-group"
-  subnet_ids = [aws_subnet.private-subnet-5.id,aws_subnet.private-subnet-6.id]
+  subnet_ids = [aws_subnet.private-subnet-2.id,aws_subnet.private-subnet-3.id]
   tags = {
     Name = "rds-subnet-group"
   }
@@ -425,17 +388,17 @@ resource "aws_db_instance" "depi-rds-instance" {
 }
 
 
-# Outputs
-output "bastion_host_public_ip" {
-  value = aws_instance.depi-bastion-host.public_ip
-  description = "Public IP address of the bastion host instance"
-}
+# # Outputs
+# output "bastion_host_public_ip" {
+#   value = aws_instance.depi-frontend-server.public_ip
+#   description = "Public IP address of the bastion host instance"
+# }
 
-# Private IP for the private instance
-output "private_instance_private_ip" {
-  value       = aws_instance.jenkins_server_instance.private_ip
-  description = "Private IP of the private EC2 instance"
-}
+# # Private IP for the private instance
+# output "private_instance_private_ip" {
+#   value       = aws_instance.jenkins_server_instance.private_ip
+#   description = "Private IP of the private EC2 instance"
+# }
 
 output "rds_instance_endpoint" {
   value = aws_db_instance.depi-rds-instance.endpoint
