@@ -277,7 +277,7 @@ resource "aws_instance" "jenkins_server_instance" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.abdelrahman-public-key.id
-  subnet_id              = aws_subnet.public-subnet-3.id
+  subnet_id              = aws_subnet.private-subnet-3.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
