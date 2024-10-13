@@ -1,0 +1,19 @@
+plugin: aws_ec2
+aws_profile: default
+regions:
+  - us-east-1
+filters:
+  instance-state-name: running
+keyed_groups:
+  - prefix: Tag
+    key: tags
+groups:
+  frontend: "'public' in tags.Privacy"
+  backend: "'private' in tags.Privacy"
+hostnames:
+  - tag:Name
+compose:
+  ansible_host: public_ip_address if tags.Name == "bastion" else private_ip_address
+  ansible_ssh_common_args: >
+    '-o ProxyCommand="ssh -W %h:%p ubuntu@18.232.129.229"'
+    if tags.Name != "bastion" else ''
