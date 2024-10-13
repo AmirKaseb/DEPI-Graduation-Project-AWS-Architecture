@@ -233,7 +233,7 @@ resource "aws_instance" "depi-frontend-server" {
 #    Service = ""
 #    Env = ""
 #    Role = ""
-#    Team = ""
+    Team = "team-1"
     Privacy = "public"
   }
 }
@@ -248,6 +248,14 @@ resource "aws_security_group" "private_app_secuirty_group" {
   ingress {
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow Jenkins access on port 8080
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -274,7 +282,7 @@ resource "aws_instance" "jenkins_server_instance" {
 #    Service = ""
 #    Env = ""
 #    Role = ""
-#    Team = ""
+    Team = "team-1"
     Privacy = "private"
   }
 }
@@ -292,7 +300,7 @@ resource "aws_instance" "depi_backend_server" {
 #    Service = ""
 #    Env = ""
 #    Role = ""
-#    Team = ""
+    Team = "team-1"
     Privacy = "private"
   }
 }
