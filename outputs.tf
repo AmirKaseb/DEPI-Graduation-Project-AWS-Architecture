@@ -1,10 +1,10 @@
 # Output declarations
-/*
+
 output "bastion_host_public_ip" {
   value       = aws_instance.depi-frontend-server.public_ip
   description = "Public IP address of the bastion host instance"
 }
-*/
+
 /*
 # Private IP for the private instance
 output "private_instance_private_ip" {

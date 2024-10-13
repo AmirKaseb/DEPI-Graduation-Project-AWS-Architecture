@@ -1,9 +1,8 @@
 # AWS Provider Configuration
-
 provider "aws" {
   region = "us-east-1"
 }
-
+/*
 # Create an S3 bucket
 resource "aws_s3_bucket" "terraform_backend_2" {
   bucket = "espace-terraform-backend-2"
@@ -11,7 +10,7 @@ resource "aws_s3_bucket" "terraform_backend_2" {
     Name = "terraform-backend-2"
   }
 }
-
+*/
 # Create an AWS keypair
 resource "aws_key_pair" "ansible-public-key" {
   key_name   = "ansible-public-key"
@@ -27,6 +26,7 @@ resource "aws_vpc" "Depi_vpc" {
     Task               = "Amir Kasseb "
   }
 }
+
 # Create Private Subnets 
 
 # Private Subnet 1 
@@ -62,6 +62,7 @@ resource "aws_subnet" "private-subnet-3" {
     Task               = "Amir Kasseb "
   }
 }
+
 # Create Public Subnets 
 
 # Public Subnet 1 
@@ -102,7 +103,6 @@ resource "aws_subnet" "public-subnet-3" {
 }
 
 # Create Internet Gateway 
-
 resource "aws_internet_gateway" "depi_internet_gateway" {
   vpc_id = aws_vpc.Depi_vpc.id
 
@@ -112,7 +112,6 @@ resource "aws_internet_gateway" "depi_internet_gateway" {
 }
 
 # Create  route table  &  associate it to the public subnets 
-
 resource "aws_route_table" "internet-gateaway-routetable" {
   vpc_id = aws_vpc.Depi_vpc.id
 
@@ -120,7 +119,6 @@ resource "aws_route_table" "internet-gateaway-routetable" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.depi_internet_gateway.id
   }
-
 
   tags = {
     Name = "internet-gateaway-routetable"
@@ -148,14 +146,11 @@ resource "aws_route_table_association" "public-association-3" {
 }
 
 # Create Elastic ip for the nat-gateaway
-
 resource "aws_eip" "depi_nat_elasticip" {
   domain = "vpc" # Specify that the Elastic IP is for use in a VPC
 }
 
-
 # Create Nat-Gateway & associate it to the private subnets 
-
 resource "aws_nat_gateway" "depi-nat-gateway" {
   allocation_id = aws_eip.depi_nat_elasticip.id
   subnet_id     = aws_subnet.public-subnet-2.id
@@ -170,7 +165,6 @@ resource "aws_nat_gateway" "depi-nat-gateway" {
 }
 
 # Create route table for private subnets 
-
 resource "aws_route_table" "nat-gateaway-routetable" {
   vpc_id = aws_vpc.Depi_vpc.id
 
@@ -178,7 +172,6 @@ resource "aws_route_table" "nat-gateaway-routetable" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_nat_gateway.depi-nat-gateway.id
   }
-
 
   tags = {
     Name = "nat-gateaway-routetable"
@@ -206,13 +199,11 @@ resource "aws_route_table_association" "private-association-3" {
 }
 
 # Create the bastion host security group & bastion host ec2 instance
-
 resource "aws_security_group" "bastion_host_secuirty_group" {
   name        = "bastion_host_secuirty_group"
   description = "This security group is for bastion host"
   vpc_id      = aws_vpc.Depi_vpc.id
   # Allowing SSH On bastion host 
-
   ingress {
     from_port   = 22
     to_port     = 22
@@ -220,9 +211,7 @@ resource "aws_security_group" "bastion_host_secuirty_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   # Allowing all outbounding traffic
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -232,7 +221,6 @@ resource "aws_security_group" "bastion_host_secuirty_group" {
 }
 
 # Bastion host ec2 instance configuration
-
 resource "aws_instance" "depi-frontend-server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
@@ -241,18 +229,22 @@ resource "aws_instance" "depi-frontend-server" {
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
-    Name = "depi-frontend-server"
+    Name = "bastion"
+#    Service = ""
+#    Env = ""
+#    Role = ""
+#    Team = ""
+    Privacy = "public"
   }
 }
-# Create the private app security group & private app ec2 instance
 
+# Create the private app security group & private app ec2 instance
 resource "aws_security_group" "private_app_secuirty_group" {
   name        = "private_app_secuirty_group"
   description = "This security group is for private app"
   vpc_id      = aws_vpc.Depi_vpc.id
 
   # Allowing SSH On private app 
-
   ingress {
     from_port   = 22
     to_port     = 22
@@ -260,9 +252,7 @@ resource "aws_security_group" "private_app_secuirty_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   # Allowing all outbounding traffic
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -271,8 +261,7 @@ resource "aws_security_group" "private_app_secuirty_group" {
   }
 }
 
-# jenkins server  instance configuration
-
+# jenkins server instance configuration
 resource "aws_instance" "jenkins_server_instance" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
@@ -281,11 +270,16 @@ resource "aws_instance" "jenkins_server_instance" {
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
-    Name = "jenkins_server_instance"
+    Name = "private-jenkins-server"
+#    Service = ""
+#    Env = ""
+#    Role = ""
+#    Team = ""
+    Privacy = "private"
   }
 }
-# prometheus server  instance configuration
 
+# prometheus server instance configuration
 resource "aws_instance" "depi_backend_server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
@@ -294,11 +288,16 @@ resource "aws_instance" "depi_backend_server" {
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
-    Name = "depi_backend_server"
+    Name = "private-backend-server"
+#    Service = ""
+#    Env = ""
+#    Role = ""
+#    Team = ""
+    Privacy = "private"
   }
 }
-# Security Group for RDS
 
+# Security Group for RDS
 resource "aws_security_group" "rds_security_group" {
   name        = "rds-security-group"
   description = "Security group for RDS instance"
@@ -328,11 +327,9 @@ resource "aws_security_group" "rds_security_group" {
   tags = {
     Name = "rds-security-group"
   }
-
 }
 
 # Create Secret & secret versions for Database credientials 
-
 data "aws_secretsmanager_secret" "rds_secret" {
   name = "RDS-Instance-SecretKey-v1"
 }
@@ -341,7 +338,6 @@ data "aws_secretsmanager_secret_version" "rds_secret_version" {
   secret_id = data.aws_secretsmanager_secret.rds_secret.id
 }
 
-
 # Create DB Subnet Group
 resource "aws_db_subnet_group" "rds-subnet-group" {
   name       = "rds-subnet-group"
@@ -349,7 +345,6 @@ resource "aws_db_subnet_group" "rds-subnet-group" {
   tags = {
     Name = "rds-subnet-group"
   }
-
 }
 
 # RDS Instance
