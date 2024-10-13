@@ -1,0 +1,18 @@
+---
+- name: Deploy Jenkins on Docker
+  hosts: Tag_Name_private_jenkins_server
+  become: true
+  vars:
+    jenkins_image: "jenkins/jenkins:lts"
+    jenkins_container_name: "jenkins-server"
+    jenkins_port: 8080
+    jenkins_home: "/var/jenkins_home"
+  roles:
+    - jenkins
+
+
+- name: Install Java on Jenkins Slave Nodes
+  hosts: Tag_Name_private_backend_server
+  become: yes
+  roles:
+    - java
