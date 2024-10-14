@@ -15,7 +15,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: '0777'
 
 - name: Run Jenkins container
   docker_container:
@@ -28,8 +28,8 @@
       - "50000:50000"
     volumes:
       - "{{ jenkins_home }}:/var/jenkins_home"
-    env:
-      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"  # Skip initial setup wizard
+#    env:
+#      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"  # Skip initial setup wizard
 
 - name: Check if Jenkins container is running
   shell: docker ps | grep "{{ jenkins_container_name }}"
