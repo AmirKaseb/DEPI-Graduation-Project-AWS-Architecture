@@ -226,7 +226,7 @@ resource "aws_instance" "depi-frontend-server" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.ansible-public-key.id
   subnet_id              = aws_subnet.public-subnet-1.id
-  vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
+  vpc_security_group_ids = [aws_security_group.bastion_host_secuirty_group.id]
 
   tags = {
     Name = "bastion"
@@ -249,7 +249,7 @@ resource "aws_security_group" "private_app_secuirty_group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.3.0/24", "10.0.2.0/24"]
   }
 
   # Allow Jenkins access on port 8080
@@ -257,7 +257,7 @@ resource "aws_security_group" "private_app_secuirty_group" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.3.0/24"]
   }
 
   # Allowing all outbounding traffic
@@ -284,6 +284,7 @@ resource "aws_instance" "jenkins_server_instance" {
 #    Role = ""
     Team = "team-1"
     Privacy = "private"
+    Jenkins = "master"
   }
 }
 
@@ -302,6 +303,7 @@ resource "aws_instance" "depi_backend_server" {
 #    Role = ""
     Team = "team-1"
     Privacy = "private"
+    Jenkins = "worker"
   }
 }
 
