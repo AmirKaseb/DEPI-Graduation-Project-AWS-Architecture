@@ -1,0 +1,20 @@
+---
+
+- name: Update and install packages
+  hosts: all
+  become: true
+  pre_tasks:
+  
+  - name: Install updates (Ubuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+
+#- name: Change hostnames to match Name tag
+#  hosts: aws_ec2
+#  gather_facts: false
+#  roles:
+#    - hostname

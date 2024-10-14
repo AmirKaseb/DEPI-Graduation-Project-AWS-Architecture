@@ -1,0 +1,42 @@
+- name: Install fontconfig and openjdk-17-jre (Ubuntu)
+  apt:
+    name:
+      - fontconfig
+      - openjdk-17-jre
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Verify Java installation
+  command: java -version
+  register: java_version_output
+  ignore_errors: yes
+
+- name: Display Java version
+  debug:
+    msg: "{{ java_version_output.stdout }}"
+  when: java_version_output is defined
+
+- name: Create Jenkins worker home directory
+  file:
+    path: "/opt/jenkins_worker"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Generate SSH key pair
+  openssh_keypair:
+    path: /root/.ssh/id_ed25519
+    type: "ed25519"
+    comment: "Jenkins worker key pair"
+  register: ssh_key
+
+#- name: Display generated public key
+#  debug:
+#    msg: "Generated public key: {{ ssh_key.public_key }}"
+
+- name: Add public key to authorized_keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ ssh_key.public_key }}"

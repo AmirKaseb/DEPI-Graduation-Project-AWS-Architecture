@@ -1,0 +1,48 @@
+- name: Install prerequisite packages
+  apt:
+    name: 
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+
+- name: Add Docker GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Update apt cache after adding Docker repo
+  apt:
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: docker-ce
+    state: present
+
+- name: Ensure Docker is enabled and started
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Add ubuntu user to Docker group
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
+  when: ansible_user == "ubuntu"
+
+# Verify Docker installation
+- name: Check Docker version
+  command: docker --version
+  register: docker_version_output
+
+- debug:
+    var: docker_version_output.stdout

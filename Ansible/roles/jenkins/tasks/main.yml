@@ -1,0 +1,40 @@
+- name: Ensure Docker is running
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Pull Jenkins Docker image
+  docker_image:
+    name: "{{ jenkins_image }}"
+    source: pull
+
+- name: Create Jenkins home directory
+  file:
+    path: "{{ jenkins_home }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: Run Jenkins container
+  docker_container:
+    name: "{{ jenkins_container_name }}"
+    image: "{{ jenkins_image }}"
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ jenkins_port }}:8080"
+      - "50000:50000"
+    volumes:
+      - "{{ jenkins_home }}:/var/jenkins_home"
+#    env:
+#      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"  # Skip initial setup wizard
+
+- name: Check if Jenkins container is running
+  shell: docker ps | grep "{{ jenkins_container_name }}"
+  register: container_status
+
+- name: Show Jenkins container status
+  debug:
+    msg: "Jenkins container status: {{ container_status.stdout }}"
