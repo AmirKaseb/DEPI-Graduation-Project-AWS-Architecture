@@ -12,9 +12,9 @@ resource "aws_s3_bucket" "terraform_backend_2" {
 }
 */
 # Create an AWS keypair
-resource "aws_key_pair" "ansible-public-key" {
-  key_name   = "ansible-public-key"
-  public_key = file("/home/abdelrahman/.ssh/Ansible.pub")
+resource "aws_key_pair" "depi-key-pair" {
+  key_name   = "depi-key-pair"
+  public_key = file("/home/abdelrahman/.ssh/DEPI.pub")
 }
 
 # Create a VPC
@@ -224,16 +224,16 @@ resource "aws_security_group" "bastion_host_secuirty_group" {
 resource "aws_instance" "depi-frontend-server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.public-subnet-1.id
   vpc_security_group_ids = [aws_security_group.bastion_host_secuirty_group.id]
 
   tags = {
     Name = "bastion"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "public"
   }
 }
@@ -273,16 +273,16 @@ resource "aws_security_group" "private_app_secuirty_group" {
 resource "aws_instance" "jenkins_server_instance" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-3.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
     Name = "private-jenkins-server"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "private"
     Jenkins = "master"
   }
@@ -292,16 +292,16 @@ resource "aws_instance" "jenkins_server_instance" {
 resource "aws_instance" "depi_backend_server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-1.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
 
   tags = {
     Name = "private-backend-server"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "private"
     Jenkins = "worker"
   }

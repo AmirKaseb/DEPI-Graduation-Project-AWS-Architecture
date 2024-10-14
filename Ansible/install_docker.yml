@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: aws_ec2
   become: true
   pre_tasks:
   
@@ -13,7 +13,7 @@
 
 
 - name: Install Docker Engine on the private instances
-  hosts: backend
+  hosts: aws_ec2
   become: true
   roles:
     - docker

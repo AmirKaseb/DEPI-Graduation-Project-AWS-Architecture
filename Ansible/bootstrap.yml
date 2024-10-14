@@ -1,7 +1,7 @@
 ---
 
 - name: Update and install packages
-  hosts: all
+  hosts: aws_ec2
   become: true
   pre_tasks:
   
