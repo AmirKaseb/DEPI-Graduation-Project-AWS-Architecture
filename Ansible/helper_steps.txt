@@ -1,0 +1,19 @@
+# ssh -o ProxyCommand="ssh -W %h:%p ubuntu@<BASTION_HOST_PUBLIC_IP>" ubuntu@<JENKINS_SERVER_PRIVATE_IP>
+ssh -o ProxyCommand="ssh -W %h:%p ubuntu@" ubuntu@
+
+cat /var/jenkins_home/secrets/initialAdminPassword
+
+exit
+
+# ssh -i ~/.ssh/Ansible -L 8080:<JENKINS_SERVER_PRIVATE_IP>:8080 ubuntu@<BASTION_HOST_PUBLIC_IP>
+ssh -i ~/.ssh/Ansible -L 8080::8080 ubuntu@
+
+firefox localhost:8080 &
+
+# Initial Password: <JENKINS_INITIAL_ADMIN_PASSWORD>
+Initial Password: 
+
+# Worker Node Host: <BACKEND_SERVER_PRIVATE_IP>
+Worker Node Host: 
+
+ansible all -m ansible.builtin.setup > facts.
