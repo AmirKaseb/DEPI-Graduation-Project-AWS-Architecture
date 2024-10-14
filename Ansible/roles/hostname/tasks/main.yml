@@ -1,0 +1,28 @@
+- name: Gather EC2 instance facts
+  ec2_instance_info:
+    region: us-east-1
+    filters:
+      "tag:Name": "*"
+  register: ec2_instances
+
+- name: Set hostname based on Name tag
+  hostname:
+    name: "{{ item.tags.Name }}"
+  when: item.tags.Name is defined
+  loop: "{{ ec2_instances.instances }}"
+
+- name: Ensure hostname is persisted in /etc/hostname
+  lineinfile:
+    path: /etc/hostname
+    line: "{{ item.tags.Name }}"
+  when: item.tags.Name is defined
+  loop: "{{ ec2_instances.instances }}"
+
+- name: Ensure /etc/hosts is updated
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ item.tags.Name }}"
+    state: present
+  when: item.tags.Name is defined
+  loop: "{{ ec2_instances.instances }}"
