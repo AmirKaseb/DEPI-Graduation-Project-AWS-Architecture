@@ -2,7 +2,6 @@
 
 - hosts: aws_ec2
   become: true
-  gather_facts: false
   pre_tasks:
   
   - name: Update repository index (Ubuntu)

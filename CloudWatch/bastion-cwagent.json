@@ -5,7 +5,7 @@
     "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
   },
   "metrics": {
-    "namespace": "FrontEndServerMetrics",
+    "namespace": "JenkinsServerMetrics",
     "metrics_collected": {
       "cpu": {
         "measurement": [
@@ -34,6 +34,20 @@
           "/var/lib/docker"
         ],
         "metrics_collection_interval": 60
+      }
+    }
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+            "log_group_name": "depi-team-1",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          }
+        ]
       }
     }
   }
