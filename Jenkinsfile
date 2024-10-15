@@ -1,10 +1,10 @@
 pipeline {
-    agent { label 'ahmedhakem' }
+    agent { label 'worker-label' }
  
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-credentials-ahmed')
-        DOCKER_HUB_REPO = 'ahmed10hakem/spring-mvnc'
-        IMAGE_NAME = 'ahmed10hakem/spring-mvnc'
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_HUB_REPO = 'abdelrahman495/spring-mvnc'
+        IMAGE_NAME = 'abdelrahman495/spring-mvnc'
         TAG = 'latest'  // You can replace this with a version or commit hash
             }
 
@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout code from your source repository
-                git branch: 'main', url: 'https://github.com/ahmedabdelhakim13/spring-mvc.git'
+                git branch: 'main', url: 'https://github.com/abdelrahman495/DEPI-Graduation-Project-AWS-Architecture.git'
             }
         }
 
@@ -39,7 +39,7 @@ pipeline {
             steps {
      
                      sh """
-                                docker run -d -p 8085:8080 --name spring-mvnc ahmed10hakem/spring-mvnc:latest
+                                docker run -d -p 8085:8080 --name spring-mvnc abdelrahman495/spring-mvnc:latest
                             
                         """
             }
