@@ -227,6 +227,7 @@ resource "aws_instance" "depi-frontend-server" {
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.public-subnet-1.id
   vpc_security_group_ids = [aws_security_group.bastion_host_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "bastion"
@@ -276,6 +277,7 @@ resource "aws_instance" "jenkins_server_instance" {
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-3.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "private-jenkins-server"
@@ -295,6 +297,7 @@ resource "aws_instance" "depi_backend_server" {
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-1.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "private-backend-server"
@@ -305,6 +308,60 @@ resource "aws_instance" "depi_backend_server" {
     Privacy = "private"
     Jenkins = "worker"
   }
+}
+
+# IAM Role for EC2 CloudWatch Monitoring
+resource "aws_iam_role" "ec2_monitoring_role" {
+  name = "ec2_monitoring_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM Policy for CloudWatch Agent
+resource "aws_iam_policy" "cloudwatch_agent_policy" {
+  name        = "cloudwatch-agent-policy"
+  description = "Policy for EC2 CloudWatch Agent"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricData",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach CloudWatch policy to the IAM role
+resource "aws_iam_role_policy_attachment" "attach_cloudwatch_policy" {
+  role       = aws_iam_role.ec2_monitoring_role.name
+  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+# IAM Instance Profile for EC2
+resource "aws_iam_instance_profile" "ec2_monitoring_instance_profile" {
+  name = "ec2-monitoring-instance-profile"
+  role = aws_iam_role.ec2_monitoring_role.name
 }
 
 # Security Group for RDS
