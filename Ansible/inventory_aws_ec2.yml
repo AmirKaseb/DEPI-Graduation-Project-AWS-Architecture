@@ -18,7 +18,6 @@ groups:
   backend: "'private' in tags.Privacy"
   jenkins_masters: "'master' in tags.Jenkins"
   jenkins_workers: "'worker' in tags.Jenkins"
-#  local:
 
 hostnames:
   - tag:Name

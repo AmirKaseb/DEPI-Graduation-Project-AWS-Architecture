@@ -357,55 +357,6 @@ resource "aws_db_subnet_group" "rds-subnet-group" {
   }
 }
 
-resource "aws_iam_role" "rds_monitoring_role" {
-  name = "rds-monitoring-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "rds.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-
-  tags = {
-    Name = "rds-monitoring-role"
-  }
-}
-
-resource "aws_iam_role_policy" "rds_monitoring_policy" {
-  name = "rds-monitoring-policy"
-  role = aws_iam_role.rds_monitoring_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams",
-          "cloudwatch:PutMetricData",
-          "cloudwatch:ListMetrics"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "rds_monitoring_policy_attachment" {
-  role       = aws_iam_role.rds_monitoring_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-}
-
 # RDS Instance
 resource "aws_db_instance" "depi-rds-instance" {
   identifier             = "depi-rds-instance"
@@ -430,4 +381,26 @@ resource "aws_db_instance" "depi-rds-instance" {
   tags = {
     Name = "depi-rds-instance"
   }
+}
+
+resource "aws_iam_role" "rds_monitoring_role" {
+  name = "rds_monitoring_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring_policy" {
+  role       = aws_iam_role.rds_monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
