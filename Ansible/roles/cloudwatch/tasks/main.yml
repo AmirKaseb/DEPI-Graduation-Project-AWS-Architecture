@@ -13,12 +13,12 @@
 - name: Clone GitHub repository for CloudWatch configurations
   git:
     repo: 'https://github.com/abdelrahman495/DEPI-Graduation-Project-AWS-Architecture'
-    dest: ~/cloudwatch-configs
+    dest: /tmp/cloudwatch-configs
     update: yes
 
 - name: Set configuration file path based on instance tag Name
   set_fact:
-    config_file: "~/cloudwatch-configs/CloudWatch/{{ tags.Name }}-cwagent.json"
+    config_file: "/tmp/cloudwatch-configs/CloudWatch/{{ tags.Name }}-cwagent.json"
 
 - name: Check if the configuration file exists
   stat:
