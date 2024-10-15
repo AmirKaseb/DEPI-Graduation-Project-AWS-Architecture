@@ -14,6 +14,7 @@ resource "aws_s3_bucket" "terraform_backend_2" {
 # Create an AWS keypair
 resource "aws_key_pair" "depi-key-pair" {
   key_name   = "depi-key-pair"
+  # Please ensure that the location of the public key is correct
   public_key = file("/home/abdelrahman/.ssh/DEPI.pub")
 }
 
