@@ -14,7 +14,7 @@
 
 - name: Install Java on Jenkins Slave Nodes
   hosts: jenkins_workers
-  become: yes
+  become: true
   pre_tasks:
 
   - name: Update repository index (Ubuntu)

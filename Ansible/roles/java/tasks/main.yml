@@ -31,10 +31,6 @@
     comment: "Jenkins worker key pair"
   register: ssh_key
 
-#- name: Display generated public key
-#  debug:
-#    msg: "Generated public key: {{ ssh_key.public_key }}"
-
 - name: Add public key to authorized_keys
   authorized_key:
     user: root
