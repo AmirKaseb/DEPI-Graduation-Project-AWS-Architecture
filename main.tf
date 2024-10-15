@@ -12,9 +12,10 @@ resource "aws_s3_bucket" "terraform_backend_2" {
 }
 */
 # Create an AWS keypair
-resource "aws_key_pair" "ansible-public-key" {
-  key_name   = "ansible-public-key"
-  public_key = file("/home/abdelrahman/.ssh/Ansible.pub")
+resource "aws_key_pair" "depi-key-pair" {
+  key_name   = "depi-key-pair"
+  # Please ensure that the location of the public key is correct
+  public_key = file("/home/abdelrahman/.ssh/DEPI.pub")
 }
 
 # Create a VPC
@@ -224,16 +225,17 @@ resource "aws_security_group" "bastion_host_secuirty_group" {
 resource "aws_instance" "depi-frontend-server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.public-subnet-1.id
   vpc_security_group_ids = [aws_security_group.bastion_host_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "bastion"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "public"
   }
 }
@@ -273,16 +275,17 @@ resource "aws_security_group" "private_app_secuirty_group" {
 resource "aws_instance" "jenkins_server_instance" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-3.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "private-jenkins-server"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "private"
     Jenkins = "master"
   }
@@ -292,19 +295,74 @@ resource "aws_instance" "jenkins_server_instance" {
 resource "aws_instance" "depi_backend_server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ansible-public-key.id
+  key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-1.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
 
   tags = {
     Name = "private-backend-server"
-#    Service = ""
-#    Env = ""
-#    Role = ""
-    Team = "team-1"
+    # Service = ""
+    # Env     = ""
+    # Role    = ""
+    Team    = "team-1"
     Privacy = "private"
     Jenkins = "worker"
   }
+}
+
+# IAM Role for EC2 CloudWatch Monitoring
+resource "aws_iam_role" "ec2_monitoring_role" {
+  name = "ec2_monitoring_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM Policy for CloudWatch Agent
+resource "aws_iam_policy" "cloudwatch_agent_policy" {
+  name        = "cloudwatch-agent-policy"
+  description = "Policy for EC2 CloudWatch Agent"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricData",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach CloudWatch policy to the IAM role
+resource "aws_iam_role_policy_attachment" "attach_cloudwatch_policy" {
+  role       = aws_iam_role.ec2_monitoring_role.name
+  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+# IAM Instance Profile for EC2
+resource "aws_iam_instance_profile" "ec2_monitoring_instance_profile" {
+  name = "ec2-monitoring-instance-profile"
+  role = aws_iam_role.ec2_monitoring_role.name
 }
 
 # Security Group for RDS
@@ -372,7 +430,35 @@ resource "aws_db_instance" "depi-rds-instance" {
   skip_final_snapshot    = true
   db_subnet_group_name   = aws_db_subnet_group.rds-subnet-group.name
 
+  # Enable enhanced monitoring and attach the IAM role
+  monitoring_interval = 60
+  monitoring_role_arn = aws_iam_role.rds_monitoring_role.arn
+  # Choose the logs to export
+  enabled_cloudwatch_logs_exports = ["error", "slowquery"]
+
   tags = {
     Name = "depi-rds-instance"
   }
+}
+
+resource "aws_iam_role" "rds_monitoring_role" {
+  name = "rds_monitoring_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring_policy" {
+  role       = aws_iam_role.rds_monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }

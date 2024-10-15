@@ -3,6 +3,7 @@
 - name: Deploy Jenkins on Docker
   hosts: jenkins_masters
   become: true
+  gather_facts: false
   vars:
     jenkins_image: "jenkins/jenkins:lts"
     jenkins_container_name: "jenkins-server"
@@ -14,7 +15,7 @@
 
 - name: Install Java on Jenkins Slave Nodes
   hosts: jenkins_workers
-  become: yes
+  become: true
   pre_tasks:
 
   - name: Update repository index (Ubuntu)

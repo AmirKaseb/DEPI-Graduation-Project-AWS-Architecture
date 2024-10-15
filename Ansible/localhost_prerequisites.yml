@@ -1,0 +1,51 @@
+---
+
+- name: Setup Terraform, AWS CLI, and Python on localhost
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Ensure Python3 is installed
+      apt:
+        name: python3
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    
+    - name: Ensure pip3 is installed
+      apt:
+        name: python3-pip
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install boto3 and botocore using pip3
+      pip:
+        name:
+          - boto3
+          - botocore
+        executable: pip3
+
+    - name: Install Terraform
+      shell: |
+        apt-get update && \
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
+        apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+        apt-get update && apt-get install terraform -y
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install AWS CLI v2
+      shell: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+        unzip awscliv2.zip && sudo ./aws/install
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Read AWS credentials from CSV file
+      read_csv:
+        path: ~/Downloads/aws_credentials.csv
+        delimiter: ','
+      register: aws_csv
+
+    - name: Configure AWS CLI with access keys
+      aws_config:
+        aws_access_key: "{{ item.aws_access_key_id }}"
+        aws_secret_key: "{{ item.aws_secret_access_key }}"
+      with_items: "{{ aws_csv.list }}"
