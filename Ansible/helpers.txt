@@ -10,3 +10,6 @@ ssh -o ProxyCommand="ssh -W %h:%p ubuntu@" ubuntu@
 Worker Node Host: 
 
 sudo cat /root/.ssh/id_ed25519
+
+# ssh -i ~/.ssh/Ansible -L 8085:<BACKEND_SERVER_PRIVATE_IP>:8085 ubuntu@<BASTION_HOST_PUBLIC_IP>
+ssh -i ~/.ssh/Ansible -L 8085::8085 ubuntu@
