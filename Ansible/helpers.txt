@@ -1,5 +1,5 @@
-# ssh -i ~/.ssh/Ansible -L 8080:<JENKINS_SERVER_PRIVATE_IP>:8080 ubuntu@<BASTION_HOST_PUBLIC_IP>
-ssh -i ~/.ssh/Ansible -L 8080::8080 ubuntu@
+# ssh -i ~/.ssh/DEPI -L 8080:<JENKINS_SERVER_PRIVATE_IP>:8080 ubuntu@<BASTION_HOST_PUBLIC_IP>
+ssh -i ~/.ssh/DEPI -L 8080::8080 ubuntu@
 
 firefox localhost:8080 &
 
@@ -11,5 +11,5 @@ Worker Node Host:
 
 sudo cat /root/.ssh/id_ed25519
 
-# ssh -i ~/.ssh/Ansible -L 8085:<BACKEND_SERVER_PRIVATE_IP>:8085 ubuntu@<BASTION_HOST_PUBLIC_IP>
-ssh -i ~/.ssh/Ansible -L 8085::8085 ubuntu@
+# ssh -i ~/.ssh/DEPI -L 8085:<BACKEND_SERVER_PRIVATE_IP>:8085 ubuntu@<BASTION_HOST_PUBLIC_IP>
+ssh -i ~/.ssh/DEPI -L 8085::8085 ubuntu@
