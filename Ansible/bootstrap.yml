@@ -13,8 +13,9 @@
     when: ansible_distribution == "Ubuntu"
 
 
-#- name: Change hostnames to match Name tag
-#  hosts: aws_ec2
-#  gather_facts: false
-#  roles:
-#    - hostname
+- name: Change hostnames to match Name tag
+  hosts: aws_ec2
+  become: true
+  gather_facts: false
+  roles:
+    - hostname
