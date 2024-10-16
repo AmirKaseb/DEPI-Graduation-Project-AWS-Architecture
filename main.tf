@@ -12,9 +12,9 @@ resource "aws_s3_bucket" "terraform_backend_2" {
 }
 */
 # Create an AWS keypair
+# Please ensure that the location of the public key is correct
 resource "aws_key_pair" "depi-key-pair" {
   key_name   = "depi-key-pair"
-  # Please ensure that the location of the public key is correct
   public_key = file("/home/abdelrahman/.ssh/DEPI.pub")
 }
 
@@ -262,6 +262,14 @@ resource "aws_security_group" "private_app_secuirty_group" {
     cidr_blocks = ["10.0.3.0/24"]
   }
 
+  # Allow Backend access on port 8085
+  ingress {
+    from_port   = 8085
+    to_port     = 8085
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.3.0/24"]
+  }
+
   # Allowing all outbounding traffic
   egress {
     from_port   = 0
@@ -345,7 +353,11 @@ resource "aws_iam_policy" "cloudwatch_agent_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents",
           "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams"
+          "logs:DescribeLogStreams",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:GetDashboard",
+          "cloudwatch:PutDashboard"
         ]
         Resource = "*"
       }
