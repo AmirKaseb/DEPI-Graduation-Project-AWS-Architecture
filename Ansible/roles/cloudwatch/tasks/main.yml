@@ -6,19 +6,19 @@
 
 - name: Ensure the destination directory is empty
   file:
-    path: /tmp/cloudwatch-configs
+    path: /opt/cloudwatch-configs
     state: absent
   ignore_errors: yes
 
 - name: Clone GitHub repository for CloudWatch configurations
   git:
     repo: 'https://github.com/abdelrahman495/DEPI-Graduation-Project-AWS-Architecture'
-    dest: /tmp/cloudwatch-configs
+    dest: /opt/cloudwatch-configs
     update: yes
 
 - name: Set configuration file path based on instance tag Name
   set_fact:
-    config_file: "/tmp/cloudwatch-configs/CloudWatch/{{ tags.Name }}-cwagent.json"
+    config_file: "/opt/cloudwatch-configs/CloudWatch/{{ tags.Name }}-cwagent.json"
 
 - name: Check if the configuration file exists
   stat:
@@ -42,16 +42,22 @@
     image: amazon/cloudwatch-agent
     state: started
     restart_policy: always
+    network_mode: host
+    privileged: true
     volumes:
-      - "{{ config_file }}:/opt/aws/amazon-cloudwatch-agent/bin/config.json:ro"
+      - "{{ config_file }}:/etc/cwagentconfig/cloudwatch-agent-config.json"
+      - /proc/:/host/proc/
+      - /sys:/host/sys
+      - /:/host/root
     env:
+      HOSTNAME: "{{ tags.Name }}"
       AWS_REGION: us-east-1
-    command: /opt/aws/amazon-cloudwatch-agent/bin/start-amazon-cloudwatch-agent
+    command: >
+      /opt/aws/amazon-cloudwatch-agent/bin/start-amazon-cloudwatch-agent
+      -config /etc/cwagentconfig/cloudwatch-agent-config.json
+      -envconfig /opt/aws/amazon-cloudwatch-agent/etc/common-config.toml
 
-- name: Check if CloudWatch Agent container is running
-  shell: docker ps | grep cloudwatch-agent
-  register: container_status
-
-- name: Show CloudWatch Agent container status
-  debug:
-    msg: "CloudWatch Agent container status: {{ container_status.stdout }}"
+- name: Ensure CloudWatch Agent container is running
+  docker_container:
+    name: cloudwatch-agent
+    state: started

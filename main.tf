@@ -228,7 +228,7 @@ resource "aws_instance" "depi-frontend-server" {
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.public-subnet-1.id
   vpc_security_group_ids = [aws_security_group.bastion_host_secuirty_group.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
 
   tags = {
     Name = "bastion"
@@ -279,14 +279,14 @@ resource "aws_security_group" "private_app_secuirty_group" {
   }
 }
 
-# jenkins server instance configuration
+# Jenkins server instance configuration
 resource "aws_instance" "jenkins_server_instance" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-3.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
 
   tags = {
     Name = "private-jenkins-server"
@@ -299,14 +299,14 @@ resource "aws_instance" "jenkins_server_instance" {
   }
 }
 
-# prometheus server instance configuration
+# Backend server instance configuration
 resource "aws_instance" "depi_backend_server" {
   ami                    = "ami-005fc0f236362e99f"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.depi-key-pair.id
   subnet_id              = aws_subnet.private-subnet-1.id
   vpc_security_group_ids = [aws_security_group.private_app_secuirty_group.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_monitoring_instance_profile.id
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
 
   tags = {
     Name = "private-backend-server"
@@ -319,9 +319,9 @@ resource "aws_instance" "depi_backend_server" {
   }
 }
 
-# IAM Role for EC2 CloudWatch Monitoring
-resource "aws_iam_role" "ec2_monitoring_role" {
-  name = "ec2_monitoring_role"
+# Create IAM Role for EC2 instances to interact with CloudWatch
+resource "aws_iam_role" "ec2_cloudwatch_role" {
+  name = "ec2-cloudwatch-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -337,44 +337,24 @@ resource "aws_iam_role" "ec2_monitoring_role" {
   })
 }
 
-# IAM Policy for CloudWatch Agent
-resource "aws_iam_policy" "cloudwatch_agent_policy" {
-  name        = "cloudwatch-agent-policy"
-  description = "Policy for EC2 CloudWatch Agent"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:PutMetricData",
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams",
-          "cloudwatch:ListMetrics",
-          "cloudwatch:GetMetricStatistics",
-          "cloudwatch:GetDashboard",
-          "cloudwatch:PutDashboard"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
+# Attach CloudWatch Agent Policy to IAM Role
+resource "aws_iam_policy_attachment" "cloudwatch_agent_policy_attachment" {
+  name       = "cloudwatch-agent-policy-attachment"
+  roles      = [aws_iam_role.ec2_cloudwatch_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-# Attach CloudWatch policy to the IAM role
-resource "aws_iam_role_policy_attachment" "attach_cloudwatch_policy" {
-  role       = aws_iam_role.ec2_monitoring_role.name
-  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+# Attach AmazonEC2RoleforSSM Policy to IAM Role (for System Manager access)
+resource "aws_iam_policy_attachment" "ssm_policy_attachment" {
+  name       = "ec2-ssm-policy-attachment"
+  roles      = [aws_iam_role.ec2_cloudwatch_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 # IAM Instance Profile for EC2
-resource "aws_iam_instance_profile" "ec2_monitoring_instance_profile" {
-  name = "ec2-monitoring-instance-profile"
-  role = aws_iam_role.ec2_monitoring_role.name
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2-instance-profile"
+  role = aws_iam_role.ec2_cloudwatch_role.name
 }
 
 # Security Group for RDS
