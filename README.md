@@ -1,7 +1,8 @@
 # Terraform Infrastructure Setup for DEPI Graduation Project
 
-![alt text](<assests/Graduation Project Architecture.png.jpg>)
-![alt text](<DEPI-Graduation-Project-AWS-Architecture/assests/Graduation Project Pipeline.gif>)
+![alt text1](<assests/Graduation Project Architecture.png.jpg>)
+
+![alt text2](<./assests/Graduation Project Pipeline.gif>)
 This documentation provides an overview of the infrastructure created using Terraform for an AWS-based deployment. The architecture consists of a custom VPC with both public and private subnets, along with instances for Jenkins, Prometheus, and a Bastion host. This setup supports scalability, secure networking, and monitoring.
 
 ## Table of Contents
