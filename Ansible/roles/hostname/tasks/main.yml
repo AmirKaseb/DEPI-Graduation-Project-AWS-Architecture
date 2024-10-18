@@ -1,16 +1,16 @@
 - name: Set hostname based on Name tag
-  hostname:
+  ansible.builtin.hostname:
     name: "{{ tags.Name }}"
   when: tags.Name is defined
 
 - name: Ensure hostname is persisted in /etc/hostname
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hostname
     line: "{{ tags.Name }}"
   when: tags.Name is defined
 
 - name: Ensure /etc/hosts is updated
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hosts
     regexp: '^127\.0\.1\.1'
     line: "127.0.1.1 {{ tags.Name }}"

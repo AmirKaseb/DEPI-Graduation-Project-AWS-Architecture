@@ -1,5 +1,4 @@
 ---
-
 - name: Deploy Jenkins on Docker
   hosts: jenkins_masters
   become: true
@@ -12,18 +11,15 @@
   roles:
     - jenkins
 
-
 - name: Install Java on Jenkins Slave Nodes
   hosts: jenkins_workers
   become: true
   pre_tasks:
-
-  - name: Update repository index (Ubuntu)
-    tags: always
-    apt:
-      update_cache: yes
-    changed_when: false
-    when: ansible_distribution == "Ubuntu"
-
+    - name: Update repository index (Ubuntu)
+      tags: always
+      ansible.builtin.apt:
+        update_cache: true
+      changed_when: false
+      when: ansible_distribution == "Ubuntu"
   roles:
     - java

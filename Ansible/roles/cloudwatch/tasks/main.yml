@@ -1,32 +1,32 @@
 - name: Ensure Docker is running
-  service:
+  ansible.builtin.service:
     name: docker
     state: started
     enabled: true
 
 - name: Ensure the destination directory is empty
-  file:
+  ansible.builtin.file:
     path: /opt/cloudwatch-configs
     state: absent
-  ignore_errors: yes
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Clone GitHub repository for CloudWatch configurations
-  git:
-    repo: 'https://github.com/abdelrahman495/DEPI-Graduation-Project-AWS-Architecture'
+  ansible.builtin.git:
+    repo: "https://github.com/abdelrahman495/DEPI-Graduation-Project-AWS-Architecture"
     dest: /opt/cloudwatch-configs
-    update: yes
+    version: main
 
 - name: Set configuration file path based on instance tag Name
-  set_fact:
+  ansible.builtin.set_fact:
     config_file: "/opt/cloudwatch-configs/CloudWatch/{{ tags.Name }}-cwagent.json"
 
 - name: Check if the configuration file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ config_file }}"
   register: config_file_stat
 
 - name: Fail if the configuration file does not exist
-  fail:
+  ansible.builtin.fail:
     msg: "Configuration file for {{ tags.Name }} not found!"
   when: not config_file_stat.stat.exists
 
