@@ -6,6 +6,7 @@
 This documentation provides an overview of the infrastructure created using Terraform for an AWS-based deployment. The architecture consists of a custom VPC with both public and private subnets, along with instances for Jenkins, Prometheus, and a Bastion host. This setup supports scalability, secure networking, and monitoring.
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
 - [Architecture Overview](#architecture-overview)
 - [AWS Resources](#aws-resources)
@@ -23,6 +24,7 @@ This documentation provides an overview of the infrastructure created using Terr
 ## Prerequisites
 
 Before deploying this infrastructure, ensure the following:
+
 - **Terraform** is installed and configured (v1.0.0 or higher).
 - An **AWS account** with appropriate access rights.
 - **SSH key pairs** for secure access to instances (public and private keys).
@@ -31,6 +33,7 @@ Before deploying this infrastructure, ensure the following:
 ## Architecture Overview
 
 The AWS architecture built using Terraform consists of:
+
 - **Custom VPC**: Provides an isolated network environment with public and private subnets for different tiers of the infrastructure.
 - **Public Subnets**: Hosts internet-accessible resources like the Bastion host and NAT gateway.
 - **Private Subnets**: Secured subnets where critical applications, such as Jenkins and Prometheus, are hosted. These are not directly accessible from the internet.
@@ -49,7 +52,9 @@ This architecture ensures a highly secure and isolated environment for critical 
 ### Subnets
 
 The VPC is divided into multiple subnets for various purposes:
-- **Private Subnets**: 
+
+- **Private Subnets**:
+
   - These are used for hosting application instances like Jenkins and Prometheus.
   - Three subnets are dedicated to general private resources (`10.0.0.0/24`, `10.0.1.0/24`, `10.0.2.0/24`).
   - Three more subnets are allocated for RDS database resources (`10.0.6.0/24`, `10.0.7.0/24`, `10.0.8.0/24`).

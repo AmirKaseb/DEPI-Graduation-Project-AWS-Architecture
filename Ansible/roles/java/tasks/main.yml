@@ -1,5 +1,5 @@
 - name: Install fontconfig and openjdk-17-jre (Ubuntu)
-  apt:
+  ansible.builtin.apt:
     name:
       - fontconfig
       - openjdk-17-jre
@@ -7,22 +7,23 @@
   when: ansible_distribution == "Ubuntu"
 
 - name: Verify Java installation
-  command: java -version
+  ansible.builtin.command: java -version
   register: java_version_output
-  ignore_errors: yes
+  ignore_errors: true
+  changed_when: java_version_output.rc != 0
 
 - name: Display Java version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ java_version_output.stdout }}"
   when: java_version_output is defined
 
 - name: Create Jenkins worker home directory
-  file:
+  ansible.builtin.file:
     path: "/opt/jenkins_worker"
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Generate SSH key pair
   openssh_keypair:

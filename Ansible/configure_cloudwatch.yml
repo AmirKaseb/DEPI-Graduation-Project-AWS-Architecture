@@ -1,5 +1,4 @@
 ---
-
 - name: Setup CloudWatch Agent
   hosts: aws_ec2
   become: true

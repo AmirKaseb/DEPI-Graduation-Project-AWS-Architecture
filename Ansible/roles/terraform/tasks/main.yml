@@ -1,0 +1,22 @@
+- name: Add HashiCorp GPG key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Add HashiCorp repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Update apt cache after adding HashiCorp repo
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install Terraform
+  ansible.builtin.apt:
+    name: terraform
+    state: present
+  when: ansible_distribution == "Ubuntu"

@@ -7,30 +7,17 @@
     "namespace": "BastionServerMetrics",
     "metrics_collected": {
       "cpu": {
-        "measurement": [
-          "cpu_usage_idle",
-          "cpu_usage_user",
-          "cpu_usage_system"
-        ],
+        "measurement": ["cpu_usage_idle", "cpu_usage_user", "cpu_usage_system"],
         "metrics_collection_interval": 60,
         "totalcpu": true
       },
       "mem": {
-        "measurement": [
-          "mem_used_percent",
-          "mem_available",
-          "mem_total"
-        ],
+        "measurement": ["mem_used_percent", "mem_available", "mem_total"],
         "metrics_collection_interval": 60
       },
       "disk": {
-        "measurement": [
-          "used_percent",
-          "inodes_free"
-        ],
-        "resources": [
-          "/"
-        ],
+        "measurement": ["used_percent", "inodes_free"],
+        "resources": ["/"],
         "metrics_collection_interval": 60
       },
       "diskio": {
@@ -41,10 +28,8 @@
           "write_bytes",
           "io_time"
         ],
-        "resources": [
-          "*"
-        ]
-      }	  
+        "resources": ["/"]
+      }
     }
   },
   "logs": {
