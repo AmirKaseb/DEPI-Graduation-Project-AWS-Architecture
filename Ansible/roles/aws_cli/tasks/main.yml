@@ -1,0 +1,35 @@
+- name: Ensure unzip is installed
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
+- name: Download AWS CLI v2 zip file
+  ansible.builtin.get_url:
+    url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    dest: "/tmp/awscliv2.zip"
+    mode: "0644"
+
+- name: Unzip AWS CLI v2
+  ansible.builtin.unarchive:
+    src: "/tmp/awscliv2.zip"
+    dest: "/tmp/"
+    remote_src: true
+
+- name: Install AWS CLI v2
+  ansible.builtin.command:
+    cmd: "/tmp/aws/install"
+  when: ansible_distribution == "Ubuntu"
+  register: cli_installed
+  changed_when: cli_installed.rc != 0
+
+- name: Read AWS credentials from CSV file
+  community.general.read_csv:
+    path: /home/ubuntu/Downloads/aws_credentials.csv
+    delimiter: ","
+  register: aws_csv
+
+- name: Configure AWS CLI with access keys
+  amazon.aws.aws_caller_info:
+    access_key: "{{ item['Access key ID'] }}"
+    secret_key: "{{ item['Secret access key'] }}"
+  with_items: "{{ aws_csv.list }}"
